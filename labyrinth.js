@@ -1,4 +1,5 @@
-const p1Name = '😁';
+
+const p1Name = '🤩';
 const p2Name = '😎';
 const p3Name = '😴';
 const p4Name = '😳';
@@ -15,23 +16,18 @@ function getRowFooting() {
   return '┣━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━┫';
 }
 
-function getCharsInCell(p1Pos,cellNumber, bombBoxNumber) { // For placing object in a cell
+function getCharsInCell(p1Pos,cellNumber, bombBoxNumber) {
   if (cellNumber === bombBoxNumber) {
-    return placeObject('💥');
+    return ' ' + '💥' + ' ┃';
   }
 
   if (p1Pos === cellNumber) {
-    return placeObject(p1Name);
+    return ' ' + p1Name + ' ┃';
   }
-  return placeObject('⬜');
-  // return placeObject(cellNumber);
+  return ' ⬜ ┃';
 }
 
-function placeObject(object) {
-  return ' ' + object + ' ┃';
-}
-
-function createRow(p1Pos,rowStartNumber, bombBoxNumber) { // For Single Row
+function createRow(p1Pos,rowStartNumber, bombBoxNumber) {
   let rowString = '';
 
   for (let boxNumber = rowStartNumber; boxNumber > rowStartNumber - 10; boxNumber--) {
@@ -41,7 +37,7 @@ function createRow(p1Pos,rowStartNumber, bombBoxNumber) { // For Single Row
   return '┃' + rowString;
 }
 
-function createGrids(p1Pos,bombBox) { // For creating Grid
+function createGrids(p1Pos,bombBox) {
   let grid = getHeading() + '\n';
 
   for (let noOfRows = 10; noOfRows > 0; noOfRows--) {
@@ -55,37 +51,28 @@ function createGrids(p1Pos,bombBox) { // For creating Grid
   return grid + getFooting();
 }
 
-function updatePlayersPosition(position) {
-  return createGrids(position);
-}
-
-
-function getRandomNoInRange(min, max) { // 90, 100 (For Ending position to be random)
-  let randomNumber = 0;
-  while (!(randomNumber <= max && randomNumber >= min)) {
-    randomNumber = Math.ceil(Math.random() * 100);
-  }
-
-  return randomNumber;
+function getRandomNoInRange(to, from) { // 90, 100
+  return from + Math.ceil(Math.random() * (to - from));
 }
 
 function getBombPosition() {
   return Math.ceil(Math.random() * 100);
 }
 
-function isCorrectBombPosition(bombPosition) { // to check if 
-  let isCorrectPosition = bombPosition - 11 !== '🧨';
-  isCorrectPosition = isCorrectPosition && (bombPosition - 10) !== '🧨';
-  isCorrectPosition = isCorrectPosition && (bombPosition - 9) !== '🧨';
+function isCorrectBombPosition(bombPosition) {
 
-  isCorrectPosition = isCorrectPosition && (bombPosition - 1) !== '🧨';
-  isCorrectPosition = isCorrectPosition && (bombPosition + 1) !== '🧨';
+  let correctPosition = bombPosition - 11 !== '🧨';
+  correctPosition = correctPosition && bombPosition - 10 !== '🧨';
+  correctPosition = correctPosition && bombPosition - 9 !== '🧨';
 
-  isCorrectPosition = isCorrectPosition && (bombPosition + 9) !== '🧨';
-  isCorrectPosition = isCorrectPosition && (bombPosition + 10) !== '🧨';
-  isCorrectPosition = isCorrectPosition && (bombPosition + 11) !== '🧨';
+  correctPosition = correctPosition && bombPosition - 1 !== '🧨';
+  correctPosition = correctPosition && bombPosition + 1 !== '🧨';
 
-  return isCorrectPosition;
+  correctPosition = correctPosition && bombPosition + 9 !== '🧨';
+  correctPosition = correctPosition && bombPosition + 10 !== '🧨';
+  correctPosition = correctPosition && bombPosition + 11 !== '🧨';
+
+  return correctPosition;
 }
 
 function generateBombs() {
@@ -107,20 +94,20 @@ function didPlayerWin(position, endPosition) {
 }
 
 function getEndPosition() {
-  return getRandomNoInRange(90, 100);
+  return getRandomNoInRange(100, 110);
 }
 
 function getStartPosition() {
   const position = +prompt("Enter your starting position(1-10): ", "0");
 
-  if (position > 10) {
-    console.log("Starting position can only be between 1 and 10");
-    console.log("Enter the valid position!!!");
-
-    return getStartPosition();
+  if (position < 10 && position > 0) {
+    return position;
   }
 
-  return position;
+  console.log("Starting position can only be between 1 and 10");
+  console.log("Enter the valid position!!!");
+
+  return getStartPosition();
 }
 
 function isBombEncountered(position, bombPositions) {
@@ -141,13 +128,43 @@ function isBombEncountered(position, bombPositions) {
   return false;
 }
 
+function iskeyPressedValid(key) {
+  return key === 'a' || key === 's' || key === 'd' || key === 'w';
+}
+
+function getKey() {
+  const keyPressed = prompt("Enter a key to move..");
+
+  if (!iskeyPressedValid(keyPressed)) {
+    console.log("Please enter an Valid key..");
+    return getKey();
+  }
+  
+  return keyPressed;
+}
+
+function getNextPosition(currentPosition) {
+  const key = getKey();
+
+  switch (key) {
+    case 'a':
+      return currentPosition + 1;
+    case 'w':
+      return currentPosition + 10;
+    case 'd':
+      return currentPosition - 1;
+    case 's':
+      return currentPosition - 10;
+  }
+}
+
 function startGame() {
   const bombPositions = generateBombs();
-  console.log(bombPositions);
+  // console.log(bombPositions);
 
   const endPosition = getEndPosition();
   // console.log(endPosition);
-
+  
   let startPosition = 0;
   console.log(createGrids());
 
@@ -158,16 +175,19 @@ function startGame() {
     console.clear();
 
     if (isBombEncountered(startPosition, bombPositions)) {
-      console.clear();
+      console.log(createGrids(startPosition, startPosition));
+      prompt("Ohh..You encountered a Bomb💥..Press enter");
       startPosition = 0;
-    }
 
-    console.log(updatePlayersPosition(startPosition));
-    break;
+      continue;
+    }
+    
+    console.log(createGrids(startPosition));
+    console.log("a : ⬅️   w : ⬆️   d : ➡️  s : ⬇️");
+
+    startPosition = getNextPosition(startPosition);
   }
-  // console.log(endPosition);
+  console.log("Congrats..🎉..You found the destination🤩🥳") 
 }
 
 startGame();
-
-// console.log(updatePlayersPosition(10));//Labyrinth code.
