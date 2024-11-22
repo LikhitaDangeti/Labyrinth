@@ -1,4 +1,3 @@
-
 const p1Name = '🤩';
 const p2Name = '😎';
 const p3Name = '😴';
@@ -16,32 +15,48 @@ function getRowFooting() {
   return '┣━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━╋━━━━┫';
 }
 
-function getCharsInCell(p1Pos,cellNumber, bombBoxNumber) {
+// function getCharsInCell(p1Pos,cellNumber, bombBoxNumber) {
+//   if (cellNumber === bombBoxNumber) {
+//     return ' ' + '💥' + ' ┃';
+//   }
+
+//   if (p1Pos === cellNumber) {
+//     return ' ' + p1Name + ' ┃';
+//   }
+//   return ' ⬜ ┃';
+// }
+
+function getCharsInCell(p1Pos, cellNumber, bombBoxNumber) { // For placing object in a cell
   if (cellNumber === bombBoxNumber) {
-    return ' ' + '💥' + ' ┃';
+    return placeObject('💥');
   }
 
   if (p1Pos === cellNumber) {
-    return ' ' + p1Name + ' ┃';
+    return placeObject(p1Name);
   }
-  return ' ⬜ ┃';
+  return placeObject('⬜');
+  // return placeObject(cellNumber);
 }
 
-function createRow(p1Pos,rowStartNumber, bombBoxNumber) {
+function placeObject(object) {
+  return ' ' + object + ' ┃';
+}
+
+function createRow(p1Pos, rowStartNumber, bombBoxNumber) {
   let rowString = '';
 
   for (let boxNumber = rowStartNumber; boxNumber > rowStartNumber - 10; boxNumber--) {
-    rowString += getCharsInCell(p1Pos,boxNumber, bombBoxNumber);
+    rowString += getCharsInCell(p1Pos, boxNumber, bombBoxNumber);
   }
 
   return '┃' + rowString;
 }
 
-function createGrids(p1Pos,bombBox) {
+function createGrids(p1Pos, bombBox) {
   let grid = getHeading() + '\n';
 
   for (let noOfRows = 10; noOfRows > 0; noOfRows--) {
-    grid += createRow(p1Pos,noOfRows * 10, bombBox) + '\n';
+    grid += createRow(p1Pos, noOfRows * 10, bombBox) + '\n';
 
     if (noOfRows !== 1) {
       grid += getRowFooting() + '\n';
@@ -61,18 +76,18 @@ function getBombPosition() {
 
 function isCorrectBombPosition(bombPosition) {
 
-  let correctPosition = bombPosition - 11 !== '🧨';
-  correctPosition = correctPosition && bombPosition - 10 !== '🧨';
-  correctPosition = correctPosition && bombPosition - 9 !== '🧨';
+  let isCorrectPosition = bombPosition - 11 !== '🧨';
+  isCorrectPosition = isCorrectPosition && bombPosition - 10 !== '🧨';
+  isCorrectPosition = isCorrectPosition && bombPosition - 9 !== '🧨';
 
-  correctPosition = correctPosition && bombPosition - 1 !== '🧨';
-  correctPosition = correctPosition && bombPosition + 1 !== '🧨';
+  isCorrectPosition = isCorrectPosition && bombPosition - 1 !== '🧨';
+  isCorrectPosition = isCorrectPosition && bombPosition + 1 !== '🧨';
 
-  correctPosition = correctPosition && bombPosition + 9 !== '🧨';
-  correctPosition = correctPosition && bombPosition + 10 !== '🧨';
-  correctPosition = correctPosition && bombPosition + 11 !== '🧨';
+  isCorrectPosition = isCorrectPosition && bombPosition + 9 !== '🧨';
+  isCorrectPosition = isCorrectPosition && bombPosition + 10 !== '🧨';
+  isCorrectPosition = isCorrectPosition && bombPosition + 11 !== '🧨';
 
-  return correctPosition;
+  return isCorrectPosition;
 }
 
 function generateBombs() {
@@ -139,7 +154,7 @@ function getKey() {
     console.log("Please enter an Valid key..");
     return getKey();
   }
-  
+
   return keyPressed;
 }
 
@@ -158,16 +173,17 @@ function getNextPosition(currentPosition) {
   }
 }
 
-function startGame() {
-  const bombPositions = generateBombs();
-  // console.log(bombPositions);
+function explosionMessage(startPosition) {
+  console.log(createGrids(startPosition, startPosition));
+  prompt("Ohh..You encountered a Bomb💥..Press enter");
+}
 
-  const endPosition = getEndPosition();
-  // console.log(endPosition);
-  
-  let startPosition = 0;
-  console.log(createGrids());
+function movePlayer(startPosition) {
+  console.log(createGrids(startPosition));
+  console.log("a : ⬅️   w : ⬆️   d : ➡️  s : ⬇️");
+}
 
+function continueTillWin(startPosition, endPosition, bombPositions) {
   while (!didPlayerWin(startPosition, endPosition)) {
     if (startPosition < 1) {
       startPosition = getStartPosition();
@@ -175,19 +191,25 @@ function startGame() {
     console.clear();
 
     if (isBombEncountered(startPosition, bombPositions)) {
-      console.log(createGrids(startPosition, startPosition));
-      prompt("Ohh..You encountered a Bomb💥..Press enter");
+      explosionMessage();
       startPosition = 0;
-
       continue;
     }
-    
-    console.log(createGrids(startPosition));
-    console.log("a : ⬅️   w : ⬆️   d : ➡️  s : ⬇️");
+
+    movePlayer(startPosition);
 
     startPosition = getNextPosition(startPosition);
   }
-  console.log("Congrats..🎉..You found the destination🤩🥳") 
+}
+
+function startGame() {
+  const bombPositions = generateBombs();
+  const endPosition = getEndPosition();
+  let startPosition = 0;
+
+  console.log(createGrids());
+  continueTillWin(startPosition, endPosition, bombPositions);
+  console.log("Congrats..🎉..You found the destination🤩🥳");
 }
 
 startGame();
